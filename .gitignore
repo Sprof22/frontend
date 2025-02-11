@@ -13,6 +13,7 @@
 # testing
 /coverage
 
+thrash
 # next.js
 /.next/
 /out/

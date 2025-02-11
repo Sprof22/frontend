@@ -1,0 +1,547 @@
+=== File: /Users/mac/Documents/Projects/suplias/frontend/.env.local ===
+AUTH0_SECRET='6903121955dc838973f8751639669818528e48323f96f23f9b6bc14eb4f60792'
+AUTH0_BASE_URL='http://localhost:3000'
+AUTH0_ISSUER_BASE_URL='https://dev-w8wwmgbe5tq8hpt5.us.auth0.com/'
+AUTH0_CLIENT_ID='I4SV28WF4lGIqSZv8NApfyZyfOPIwTIc'
+AUTH0_CLIENT_SECRET='f-i_aAfmItcQfEQrtvT21B5ssVsS9E9uMUNdq-8N1fJoS-ZrK24p_dI4jje5LNl4'
+
+
+=== File: /Users/mac/Documents/Projects/suplias/frontend/README.md ===
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+## Getting Started
+
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+
+=== File: /Users/mac/Documents/Projects/suplias/frontend/package.json ===
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "file": "node thrash/generateFile.js"
+  },
+  "dependencies": {
+    "@auth0/nextjs-auth0": "^3.6.0",
+    "axios": "^1.7.9",
+    "next": "15.1.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.1.6",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
+}
+
+
+
+=== File: /Users/mac/Documents/Projects/suplias/frontend/src/app/api/access/route.ts ===
+import { withApiAuthRequired, getAccessToken } from "@auth0/nextjs-auth0";
+import axios from "axios";
+import { NextResponse, NextRequest } from "next/server";
+
+
+const GET = withApiAuthRequired(async (req, res) => {
+  const { accessToken } = await getAccessToken();
+  return NextResponse.json({accessToken});
+});
+
+
+export { GET };
+
+
+
+=== File: /Users/mac/Documents/Projects/suplias/frontend/src/app/api/auth/[auth0]/route.ts ===
+// app/api/auth/[auth0]/route.js
+import { handleAuth, handleLogin } from '@auth0/nextjs-auth0';
+
+export const GET = handleAuth({
+    login: handleLogin({
+        authorizationParams: {
+            audience: "richmond-test"
+        }
+    }) 
+});
+
+
+=== File: /Users/mac/Documents/Projects/suplias/frontend/src/app/dashboard/page.tsx ===
+"use client";
+// import Header from "@/components/Header";
+import { useUser } from "@auth0/nextjs-auth0/client";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+// import { faSun, faPlus } from "@fortawesome/free-solid-svg-icons";
+
+import axios from "axios";
+import Header from "@/components/Headers";
+
+interface Project {
+  ID: number;
+  Title: string;
+  Description: string;
+}
+
+const Dashboard = () => {
+  const { user, isLoading } = useUser();
+  const router = useRouter();
+  const [showLoginPrompt, setShowLoginPrompt] = useState(true);
+  const [projects, setProjects] = useState<Project[]>([]);
+  // const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // const justlandedhere = async () => {
+  //   try {
+  //     const tokenPayload = await axios.post("/api/projects");
+  //     const accessToken = tokenPayload.data.accessToken;
+  //     console.log(accessToken, "just checking");
+  //     console.log(user, " this is the user");
+
+  //     const response = await axios.post(
+  //       "http://localhost:3100/createUser",
+  //       {
+  //         email: user?.email,
+  //         Name: user?.name,
+  //         Picture: user?.picture,
+  //         Username: user?.nickname,
+  //       },
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${accessToken}`,
+  //         },
+  //       }
+  //     );
+
+  //     const errorDescription = response.data.error_description;
+  //     const postResonse = response.data.access_token;
+  //     console.log(postResonse, "this is the token");
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   // Send the request to the backend
+  //   justlandedhere();
+  // }, [user]);
+
+  const handleOpenDraft = (projectId: number) => {
+    router.push(`/project-draft?projectId=${projectId}`);
+  };
+
+  const openNewProject = () => {
+    router.push("/create-project");
+  };
+  const handleOpenProject = async (title: string) => {
+    try {
+      const tokenPayload = await axios.post("/api/projects");
+      const accessToken = tokenPayload.data.accessToken;
+      // Check if code space already exists for the project
+      console.log(title)
+      const response = await axios.post(
+        "http://localhost:3100/create_space",
+        {
+          username: user?.nickname,
+          repoName: title,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      console.log(response.data, "just checking");
+      const { message, codespace } = response.data;
+
+      console.log(message, "this the message");
+
+      // If a code space already exists, redirect to the codespace URL
+      if (message === "Codespace created successfully" && codespace) {
+
+        try {
+          // Make a PUT request to updateProject endpoint
+          const updateProjectResponse = await axios.put(
+            "http://localhost:3100/updateProject",
+            {
+              title: title,
+              codeSpaceUrl: codespace.web_url,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            }
+          );
+  
+          console.log(updateProjectResponse.data, "Update Project response");
+  
+          // Redirect to the codespace URL
+          const codespaceUrl = codespace.web_url;
+          window.location.href = codespaceUrl;
+        } catch (updateError) {
+          console.error("Error updating project:", updateError);
+          // Handle update error if needed
+        }
+      } else if (message ==="Codespace already exists") {
+        console.log(response.data, "this good")
+        const {  codeSpacUrl } = response.data;
+        window.location.href = codeSpacUrl;
+      }
+      else {
+        console.log(message);
+        // Handle other cases if needed
+      }
+    } catch (error) {
+      console.error("Error opening project:", error);
+    }
+  };
+  const handleDeleteProject = async (projectId: any) => {
+    console.log(`Project ID: ${projectId}`);
+    try {
+      const response = await axios.delete(
+        `api/projects/?projectId=${projectId}`
+      );
+      if (response.status === 200) {
+        // If deletion is successful, you may want to update the projects list
+        const updatedProjects = projects.filter(
+          (project) => project.ID !== projectId
+        );
+        setProjects(updatedProjects);
+        console.log(`Project with ID ${projectId} deleted successfully.`);
+      } else {
+        console.error(`Error deleting project with ID ${projectId}.`);
+      }
+    } catch (error) {
+      console.log(error);
+      console.error(`Error deleting project with ID ${projectId}:`, error);
+    }
+  };
+  useEffect(() => {
+    async function fetchProjects() {
+      try {
+        const response = await axios.get("api/projects");
+        // console.log(response, "this the response")
+        setProjects(response.data.projects);
+        // setLoading(false)
+        console.log(projects, "this is 2it");
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
+
+    fetchProjects();
+  }, [user, isLoading]);
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.replace("/");
+    }
+  }, [isLoading, user, router]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <p>{error}</p>;
+  }
+  return (
+    <div className="bg-gray-100 min-h-screen">
+      {/* Header */}
+      <Header />
+
+      {/* Main Content */}
+      <div className="container mx-auto p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
+
+
+
+=== File: /Users/mac/Documents/Projects/suplias/frontend/src/app/layout.tsx ===
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { UserProvider } from "@auth0/nextjs-auth0/client";
+
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  title: "Create Next App",
+  description: "Generated by create next app",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <UserProvider>
+        <body className={inter.className}>{children}</body>
+      </UserProvider>
+    </html>
+  );
+}
+
+
+
+=== File: /Users/mac/Documents/Projects/suplias/frontend/src/app/page.tsx ===
+"use client";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useUser } from "@auth0/nextjs-auth0/client";
+import { useEffect, useState } from "react";
+import { getSession } from "@auth0/nextjs-auth0";
+
+export default function Home() {
+  const { user, isLoading } = useUser();
+  const router = useRouter();
+  const [showLoginPrompt, setShowLoginPrompt] = useState(true);
+  useEffect(() => {
+    if (user) {
+      router.replace('/dashboard');
+    }
+  }, [isLoading, user, router]);
+
+  useEffect(() => {
+    if (!isLoading && user) {
+      console.log("user changed in some way")
+        // Fetch the token from your Auth0 on the client-side or via an API route
+        fetch('/api/auth/token')
+        .then(response => response.json())
+        .then(data => {
+          console.log(data, "this good")
+            // localStorage.setItem('accessToken', data.accessToken);
+        });
+    }
+}, [user, isLoading, router]);
+
+
+  // useEffect(() => {
+  //   const fetchTokenAndRedirect = async () => {
+  //     if (user) {
+  //       const session = await getSession(); // Get the session to access the token
+  //       console.log(session, "session")
+  //       if (session?.accessToken) {
+  //         localStorage.setItem('accessToken', session.accessToken); // Store the access token in local storage
+  //       }
+  //       router.replace('/dashboard');
+  //     }
+  //   };
+
+  //   fetchTokenAndRedirect();
+  // }, [user, router]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+  return (
+    <>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+      {!isLoading && !user && (
+        <>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4">
+            Welcome to DEV API
+          </h1>
+          <p className="text-lg mb-8">A collaborative coding platform.</p>
+          <div className="flex">
+            <Link
+              href="/api/auth/login"
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-4"
+            >
+              Sign In
+            </Link>
+          </div>
+        </>
+      )}
+    </div>
+  </>
+    
+     
+      
+  );
+}
+
+
+
+=== File: /Users/mac/Documents/Projects/suplias/frontend/src/app/profile-client/page.tsx ===
+'use client';
+
+import { useUser } from '@auth0/nextjs-auth0/client';
+import Image from 'next/image'
+
+export default function ProfileClient() {
+  const { user, error, isLoading } = useUser();
+  console.log(user)
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>{error.message}</div>;
+
+  return (
+      user && (
+          <div>
+            {/* <Image src={user.picture} alt={user.name} width={50} height={80} /> */}
+            <h2>{user.name}</h2>
+            <p>{user.email}</p>
+            <p>ID Token: {user.idToken}</p>
+          </div>
+      )
+  );
+}
+
+
+=== File: /Users/mac/Documents/Projects/suplias/frontend/src/components/Headers.tsx ===
+"use client";
+import { useUser } from "@auth0/nextjs-auth0/client";
+import Link from "next/link";
+import React, { useState } from "react";
+
+const Header = () => {
+  const { user, isLoading } = useUser();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen((prevState) => !prevState);
+  };
+
+  function isString(value: string | null | undefined): value is string {
+    return typeof value === "string";
+  }
+  return (
+    <div>
+      {" "}
+      <header className="bg-blue-500 p-4 text-white">
+        <div className="container mx-auto flex justify-between items-center">
+          <Link href={"/"} className="text-2xl font-bold" data-testid="code-figma-logo">
+            CodeFigma
+          </Link>
+          <div className="flex items-center">
+            {user && (
+              <div className="relative">
+                {user && (
+                  <img
+                    src={isString(user?.picture) ? user?.picture : ""}
+                    alt="User Avatar"
+                    className="w-8 h-8 rounded-full cursor-pointer"
+                    onClick={toggleDropdown}
+                    width={40}
+                    height={40}
+                  />
+                )}
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-2 py-2 bg-white border border-gray-300 rounded shadow-lg">
+                    <div className="px-4 py-2">
+                      <p className="font-bold text-black">{user.name}</p>
+                    </div>
+                    <Link
+                      href="/api/auth/logout"
+                      className="block w-full text-left px-4 py-2 text-blue-500 hover:bg-blue-100"
+                    >
+                      Logout
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
+            {!isLoading && !user && (
+              <Link
+                href="/api/auth/login"
+                className="bg-blue-700 hover:bg-blue-800 px-4 py-2 rounded"
+              >
+                Login
+              </Link>
+            )}
+          </div>
+        </div>
+      </header>
+    </div>
+  );
+};
+
+export default Header;
+
+
+
+=== File: /Users/mac/Documents/Projects/suplias/frontend/tsconfig.json ===
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+
+
