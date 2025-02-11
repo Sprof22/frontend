@@ -53,13 +53,13 @@ export const POST = async (req: Request) => {
   }
 };
 
-export const PUT = async (req: Request) => {
+export const PATCH = async (req: Request) => {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
     const body = await req.json();
 
-    const response = await axios.put(`http://localhost:3030/posts/${id}`, body, {
+    const response = await axios.patch(`http://localhost:3030/posts/${id}`, body, {
       headers: {
         Authorization: req.headers.get('Authorization') || '',
         'Content-Type': 'application/json'

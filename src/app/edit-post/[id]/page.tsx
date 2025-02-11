@@ -13,29 +13,32 @@ export default function EditPost() {
 
     useEffect(() => {
         const fetchPost = async () => {
-            try {
-                const accessToken = await fetch('/api/access').then(res => res.json());
-
-                const response = await fetch(`/api/posts?id=${id}`, {
-                    headers: { Authorization: `Bearer ${accessToken}` }
-                });
-
-                if (!response.ok) throw new Error('Failed to fetch post');
-                setFormData(await response.json());
-            } catch (error) {
-                console.error('Error fetching post:', error);
-            }
+          try {
+            const accessTokenResponse = await fetch('/api/access');
+            const { accessToken } = await accessTokenResponse.json(); // Destructure here
+      
+            const response = await fetch(`/api/posts?id=${id}`, {
+              headers: { Authorization: `Bearer ${accessToken}` }
+            });
+      
+            if (!response.ok) throw new Error('Failed to fetch post');
+            setFormData(await response.json());
+          } catch (error) {
+            console.error('Error fetching post:', error);
+          }
         };
         fetchPost();
-    }, [id]);
+      }, [id]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const accessToken = await fetch('/api/access').then(res => res.json());
+            console.log("FormData:", formData);
+            const accessTokenResponse = await fetch('/api/access');
+            const { accessToken } = await accessTokenResponse.json(); // Destructure here
 
             const response = await fetch(`/api/posts?id=${id}`, {
-                method: 'PUT',
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${accessToken}`
@@ -54,9 +57,9 @@ export default function EditPost() {
         <div className="min-h-screen bg-gray-100 p-4">
             <div className="max-w-2xl mx-auto bg-white p-6 rounded-xl shadow-sm">
                 <h1 className="text-2xl font-bold mb-6 text-gray-800">Edit Project</h1>
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6 text-blue-700">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-black mb-2">
                             Title
                         </label>
                         <input

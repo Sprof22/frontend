@@ -20,7 +20,8 @@ const Dashboard = () => {
 
   const fetchPosts = async () => {
     try {
-      const accessToken = await fetch('/api/access').then(res => res.json());
+      const accessTokenResponse = await fetch('/api/access');
+      const { accessToken } = await accessTokenResponse.json();
 
       const response = await fetch('/api/posts', {
         headers: { Authorization: `Bearer ${accessToken}` }
@@ -39,7 +40,8 @@ const Dashboard = () => {
 
   const handleDelete = async (postId: number) => {
     try {
-      const accessToken = await fetch('/api/access').then(res => res.json());
+      const accessTokenResponse = await fetch('/api/access');
+    const { accessToken } = await accessTokenResponse.json();
 
       const response = await fetch(`/api/posts?id=${postId}`, {
         method: 'DELETE',
